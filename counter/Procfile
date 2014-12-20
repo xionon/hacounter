@@ -3,3 +3,4 @@ web2: SERVER_NUMBER=2 PORT=3001 bundle exec ruby main.rb
 web3: SERVER_NUMBER=3 PORT=3002 bundle exec ruby main.rb
 redis: redis-server
 consul: consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul -config-dir /etc/consul.d
+consul-template: sudo consul-template -consul localhost:8500  -template "haproxy.ctmpl:haproxy-intermediate.ctmpl" -template "haproxy-intermediate.ctmpl:/etc/haproxy/haproxy.cfg:service haproxy reload"
