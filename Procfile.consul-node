@@ -1,0 +1,1 @@
+agent: consul agent -config-dir /etc/consul.d/agent

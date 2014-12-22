@@ -1,0 +1,9 @@
+{
+    "server": true,
+    "datacenter": "vagrant",
+    "data_dir": "/tmp/consul",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "start_join": [],
+    "bind_addr": ":ip:",
+}
