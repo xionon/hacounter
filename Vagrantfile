@@ -1,11 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-$update_system = "sudo apt-get update -y && sudo apt-get upgrade -y"
+$update_system = "sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get install curl vim -y"
 
 $install_consul = <<-CONSUL
 if [ ! -e /usr/local/bin/consul ]
@@ -24,7 +20,10 @@ $consul_server = lambda { |ip|
 sudo mkdir -p /etc/consul.d/server
 sudo cp /vagrant/consul-server.json /etc/consul.d/server/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/server/config.json
-sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-server --user vagrant --app consul
+if [ !-e /etc/init/consul-server.conf ]
+  then
+    sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-server --user vagrant --app consul
+fi
 CONSUL_SERVER
 }
 
@@ -33,7 +32,10 @@ $consul_node = lambda { |ip|
 sudo mkdir -p /etc/consul.d/agent
 sudo cp /vagrant/consul-node.json /etc/consul.d/agent/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/config.json
-sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-node --user vagrant --app consul
+if [ !-e /etc/init/consul-node.conf ]
+  then
+    sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-node --user vagrant --app consul
+fi
 CONSUL_NODE
 }
 
@@ -64,7 +66,7 @@ Vagrant.configure(2) do |config|
       #{$update_system}
       if [ ! `which redis-server` ]
       then
-        sudo apt-get install -y unzip redis-server vim
+        sudo apt-get install -y unzip redis-server
         sudo sed -i'.bak' -e 's/bind 127/bind 192.168.33.10 127/' /etc/redis/redis.conf
       fi
 
@@ -84,11 +86,13 @@ Vagrant.configure(2) do |config|
       #{$update_system}
       if [ ! `which haproxy` ]
       then
-        sudo apt-get install -y haproxy vim golang git
+        sudo apt-get install -y haproxy golang git
       fi
 
       #{$install_consul}
       #{$consul_node.call("192.168.33.11")}
+      sudo cp /vagrant/proxy-service.json /etc/consul.d/agent/
+      sudo service consul restart
       #{$install_consul_template}
       #{$install_ruby}
     SHELL
@@ -106,7 +110,13 @@ Vagrant.configure(2) do |config|
         #{$install_ruby}
         #{$install_consul}
         #{$consul_node.call(ip)}
-        sudo foreman export upstart /etc/init -u vagrant --procfile /vagrant/counter/Procfile
+        sudo cp /vagrant/app-service.json /etc/consul.d/agent/
+        sudo sed -i'' -e 's/\:id\:/app-#{i}/' /etc/consul.d/agent/app-service.json
+        sudo service consul restart
+        if [ ! -e /etc/init/app.conf ]
+          then
+            sudo foreman export upstart /etc/init -u vagrant --procfile /vagrant/counter/Procfile
+        fi
       SHELL
 
       app.vm.hostname = "app-#{i}"

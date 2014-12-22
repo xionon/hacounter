@@ -5,5 +5,5 @@
     "log_level": "INFO",
     "enable_syslog": true,
     "start_join": [],
-    "bind_addr": ":ip:",
+    "bind_addr": ":ip:"
 }

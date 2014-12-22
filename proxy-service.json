@@ -1,0 +1,13 @@
+{
+    "service": {
+        "name": "proxy",
+        "id": "proxy",
+        "port": 8080,
+        "tags": ["ruby"],
+        "check": {
+            "script": "curl localhost:8080/heartbeat > /dev/null 2>&1",
+            "interval": "10s"
+        }
+    }
+}
+

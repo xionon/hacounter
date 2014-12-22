@@ -1,1 +1,1 @@
-server: consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul -config-dir /etc/consul.d
+server: consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul -config-dir /etc/consul.d/server
