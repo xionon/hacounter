@@ -5,7 +5,7 @@
         "port": 5000,
         "tags": ["ruby"],
         "check": {
-            "script": "curl localhost:5000/heartbeat > /dev/null 2>&1",
+            "script": "curl http://:ip::5000/heartbeat > /dev/null 2>&1",
             "interval": "10s"
         }
     }

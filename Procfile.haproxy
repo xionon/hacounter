@@ -1,1 +1,1 @@
-consul-template: sudo consul-template -consul localhost:8500  -template "haproxy.ctmpl:haproxy-intermediate.ctmpl" -template "haproxy-intermediate.ctmpl:/etc/haproxy/haproxy.cfg:service haproxy reload"
+consul-template: consul-template -consul localhost:8500  -template "haproxy.ctmpl:haproxy-intermediate.ctmpl" -template "haproxy-intermediate.ctmpl:/etc/haproxy/haproxy.cfg:service haproxy reload"

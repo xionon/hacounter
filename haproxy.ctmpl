@@ -24,7 +24,5 @@ listen hacounter 0.0.0.0:8080
     balance roundrobin
     option httpclose
     option forwardfor
-    option httpchk GET /heartbeat
-    server app0 localhost:3000 check weight {{key "service/app/weight/app0"}}
-    server app1 localhost:3001 check weight {{key "service/app/weight/app1"}}
-    server app2 localhost:3002 check weight {{key "service/app/weight/app2"}}
+    option httpchk GET /heartbeat{{range service "ruby.app"}}
+    server {{.ID}} {{.Address}}:{{.Port}}{{end}}

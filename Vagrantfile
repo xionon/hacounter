@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$update_system = "sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get install curl vim -y"
+$update_system = "if [ ! `which curl` ]; then sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get install curl vim -y; fi"
 
 $install_consul = <<-CONSUL
 if [ ! -e /usr/local/bin/consul ]
@@ -23,6 +23,7 @@ sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/server/config.json
 if [ ! -e /etc/init/consul-server.conf ]
   then
     sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-server --user vagrant --app consul
+    sudo service consul start
 fi
 CONSUL_SERVER
 }
@@ -35,6 +36,7 @@ sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/config.json
 if [ ! -e /etc/init/consul-node.conf ]
   then
     sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-node --user vagrant --app consul
+    sudo service consul start
 fi
 CONSUL_NODE
 }
@@ -54,9 +56,9 @@ $install_ruby = <<-RUBY
 if [[ ! `which ruby` ]] || [[ ! `which bundle` ]]
 then
   sudo apt-get install -y ruby bundler
+  cd /vagrant/counter
+  bundle install
 fi
-cd /vagrant/counter
-bundle install
 RUBY
 
 Vagrant.configure(2) do |config|
@@ -64,15 +66,16 @@ Vagrant.configure(2) do |config|
     consul.vm.box = "chef/ubuntu-14.04"
     consul.vm.provision "shell", inline: <<-SHELL
       #{$update_system}
+      #{$install_ruby}
       if [ ! `which redis-server` ]
       then
         sudo apt-get install -y unzip redis-server
         sudo sed -i'.bak' -e 's/bind 127/bind 192.168.33.10 127/' /etc/redis/redis.conf
+        sudo service redis-server restart
       fi
 
       #{$install_consul}
       #{$consul_server.call("192.168.33.10")}
-      #{$install_ruby}
     SHELL
 
     consul.vm.hostname = "consul"
@@ -81,12 +84,13 @@ Vagrant.configure(2) do |config|
 
   config.vm.define("proxy") do |proxy|
     proxy.vm.box = "chef/ubuntu-14.04"
-    proxy.vm.network "forwarded_port", guest: 80, host: 8080
+    proxy.vm.network "forwarded_port", guest: 8080, host: 8080
     proxy.vm.provision "shell", inline: <<-SHELL
       #{$update_system}
+      #{$install_ruby}
       if [ ! `which haproxy` ]
-      then
-        sudo apt-get install -y haproxy golang git
+        then
+          sudo apt-get install -y haproxy golang git
       fi
 
       #{$install_consul}
@@ -94,7 +98,12 @@ Vagrant.configure(2) do |config|
       sudo cp /vagrant/proxy-service.json /etc/consul.d/agent/
       sudo service consul restart
       #{$install_consul_template}
-      #{$install_ruby}
+      echo "ENABLED=1" > /etc/default/haproxy
+      if [ ! -e /etc/init/proxy.conf ]
+        then
+          sudo foreman export upstart /etc/init -u root --procfile /vagrant/Procfile.haproxy --app proxy
+      fi
+      sudo service proxy restart
     SHELL
 
     proxy.vm.hostname = "proxy"
@@ -112,11 +121,14 @@ Vagrant.configure(2) do |config|
         #{$consul_node.call(ip)}
         sudo cp /vagrant/app-service.json /etc/consul.d/agent/
         sudo sed -i'' -e 's/\:id\:/app-#{i}/' /etc/consul.d/agent/app-service.json
+        sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/app-service.json
         sudo service consul restart
         if [ ! -e /etc/init/app.conf ]
           then
-            sudo foreman export upstart /etc/init -u vagrant --procfile /vagrant/counter/Procfile
+            echo "BIND_ADDR=\\"#{ip}\\"" >> /tmp/.env
+            sudo foreman export upstart /etc/init -u vagrant --procfile /vagrant/counter/Procfile --env /tmp/.env --app counter
         fi
+        sudo service counter restart
       SHELL
 
       app.vm.hostname = "app-#{i}"
