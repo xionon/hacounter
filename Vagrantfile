@@ -20,7 +20,7 @@ $consul_server = lambda { |ip|
 sudo mkdir -p /etc/consul.d/server
 sudo cp /vagrant/consul-server.json /etc/consul.d/server/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/server/config.json
-if [ !-e /etc/init/consul-server.conf ]
+if [ ! -e /etc/init/consul-server.conf ]
   then
     sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-server --user vagrant --app consul
 fi
@@ -32,7 +32,7 @@ $consul_node = lambda { |ip|
 sudo mkdir -p /etc/consul.d/agent
 sudo cp /vagrant/consul-node.json /etc/consul.d/agent/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/config.json
-if [ !-e /etc/init/consul-node.conf ]
+if [ ! -e /etc/init/consul-node.conf ]
   then
     sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-node --user vagrant --app consul
 fi
