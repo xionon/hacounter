@@ -1,0 +1,6 @@
+- move haproxy-intermediate.ctmpl to /tmp on the proxy machine
+  - touch haproxy-intermediate.ctmpl at boot to make sure it's ready for consul-template
+- move consul-template config to a config file
+- move config files to subdirs in the project: proxy, database, app
+- graceful shutdowns on unicorn
+  - make sure we can shut down a node without dropping requests
