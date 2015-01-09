@@ -18,11 +18,11 @@ CONSUL
 $consul_server = lambda { |ip|
 <<-CONSUL_SERVER
 sudo mkdir -p /etc/consul.d/server
-sudo cp /vagrant/consul-server.json /etc/consul.d/server/config.json
+sudo cp /vagrant/consul/config.json /etc/consul.d/server/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/server/config.json
 if [ ! -e /etc/init/consul-server.conf ]
   then
-    sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-server --user vagrant --app consul
+    sudo foreman export upstart /etc/init --procfile /vagrant/consul/Procfile.consul-server --user vagrant --app consul
     sudo service consul start
 fi
 CONSUL_SERVER
@@ -31,11 +31,11 @@ CONSUL_SERVER
 $consul_node = lambda { |ip|
 <<-CONSUL_NODE
 sudo mkdir -p /etc/consul.d/agent
-sudo cp /vagrant/consul-node.json /etc/consul.d/agent/config.json
+sudo cp /vagrant/counter/config.json /etc/consul.d/agent/config.json
 sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/config.json
 if [ ! -e /etc/init/consul-node.conf ]
   then
-    sudo foreman export upstart /etc/init --procfile /vagrant/Procfile.consul-node --user vagrant --app consul
+    sudo foreman export upstart /etc/init --procfile /vagrant/consul/Procfile.consul-agent --user vagrant --app consul
     sudo service consul start
 fi
 CONSUL_NODE
@@ -95,13 +95,13 @@ Vagrant.configure(2) do |config|
 
       #{$install_consul}
       #{$consul_node.call("192.168.33.11")}
-      sudo cp /vagrant/proxy-service.json /etc/consul.d/agent/
+      sudo cp /vagrant/proxy/proxy.json /etc/consul.d/agent/
       sudo service consul restart
       #{$install_consul_template}
       echo "ENABLED=1" > /etc/default/haproxy
       if [ ! -e /etc/init/proxy.conf ]
         then
-          sudo foreman export upstart /etc/init -u root --procfile /vagrant/Procfile.haproxy --app proxy
+          sudo foreman export upstart /etc/init -u root --procfile /vagrant/proxy/Procfile.haproxy --app proxy
       fi
       sudo service proxy restart
     SHELL
@@ -119,9 +119,9 @@ Vagrant.configure(2) do |config|
         #{$install_ruby}
         #{$install_consul}
         #{$consul_node.call(ip)}
-        sudo cp /vagrant/app-service.json /etc/consul.d/agent/
-        sudo sed -i'' -e 's/\:id\:/app-#{i}/' /etc/consul.d/agent/app-service.json
-        sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/app-service.json
+        sudo cp /vagrant/counter/app.json /etc/consul.d/agent/
+        sudo sed -i'' -e 's/\:id\:/app-#{i}/' /etc/consul.d/agent/app.json
+        sudo sed -i'' -e 's/\:ip\:/#{ip}/' /etc/consul.d/agent/app.json
         sudo service consul restart
         if [ ! -e /etc/init/app.conf ]
           then

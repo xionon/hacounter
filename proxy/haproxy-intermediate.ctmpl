@@ -25,5 +25,6 @@ listen hacounter 0.0.0.0:8080
     option httpclose
     option forwardfor
     option httpchk GET /heartbeat
+    server app-0 192.168.33.20:5000
     server app-1 192.168.33.21:5000
     server app-2 192.168.33.22:5000
