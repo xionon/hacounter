@@ -1,1 +1,2 @@
 web: bundle exec ruby main.rb -o $BIND_ADDR
+consul-template: consul-template -consul localhost:8500 -config /vagrant/counter/templates.hcl

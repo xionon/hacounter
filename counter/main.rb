@@ -1,8 +1,10 @@
 require "sinatra"
 require "redis"
 require "hiredis"
+require "yaml"
 
-redis = Redis.new(:host => "192.168.33.10", :driver => :hiredis)
+redis_config = YAML.load_file('redis.yml')
+redis = Redis.new(:host => redis_config["hosts"][0], :driver => :hiredis)
 hostname = `hostname`.strip
 
 get "/" do

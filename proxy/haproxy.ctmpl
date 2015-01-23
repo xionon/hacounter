@@ -23,6 +23,5 @@ listen hacounter 0.0.0.0:8080
     stats auth braintree:password
     balance roundrobin
     option httpclose
-    option forwardfor
-    option httpchk GET /heartbeat{{range service "ruby.app"}}
+    option forwardfor{{range service "ruby.app"}}
     server {{.ID}} {{.Address}}:{{.Port}}{{end}}

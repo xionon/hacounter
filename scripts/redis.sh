@@ -13,3 +13,6 @@ fi
 
 sudo sed -i'.bak' -e "/^[^#]*bind/s/^/# /" /etc/redis/redis.conf
 sudo service redis-server restart
+
+sudo cp /vagrant/redis/redis.json /etc/consul.d/agent
+sudo service consul restart

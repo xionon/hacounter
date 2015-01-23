@@ -1,0 +1,2 @@
+hosts: {{ range service "redis" }}
+  - {{ .Address }}{{ end }}
