@@ -24,4 +24,5 @@ listen hacounter 0.0.0.0:8080
     balance roundrobin
     option httpclose
     option forwardfor{{range service "ruby.app"}}
-    server {{.ID}} {{.Address}}:{{.Port}}{{end}}
+    server {{.ID}} {{.Address}}:{{.Port}} {{printf "{{with $weight := key \"service/app/weight/%s\"}}{{if $weight}}weight {{ $weight }}{{ end }}{{ end }}" .ID}}{{end}}
+
