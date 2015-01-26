@@ -2,6 +2,7 @@
     "server": true,
     "datacenter": "vagrant",
     "data_dir": "/tmp/consul",
+    "web_ui": "/var/lib/consul/web_ui",
     "log_level": "INFO",
     "enable_syslog": true,
     "start_join": [],
