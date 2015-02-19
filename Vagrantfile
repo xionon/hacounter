@@ -10,6 +10,7 @@ Vagrant.configure(2) do |config|
     consul.vm.box = $base_box
     consul.vm.hostname = "consul"
     consul.vm.network "private_network", ip: ip
+    consul.vm.network "forwarded_port", guest: 8500, host: 8500
 
     consul.vm.provision "shell", path: "scripts/baseline.sh"
     consul.vm.provision "shell", path: "scripts/consul_server.sh", args: [ip]

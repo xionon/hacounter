@@ -5,8 +5,8 @@
         "port": 5000,
         "tags": ["ruby"],
         "check": {
-            "script": "curl http://:ip::5000/heartbeat > /dev/null 2>&1",
-            "interval": "10s"
+            "script": "/vagrant/counter/health.sh",
+            "interval": "1s"
         }
     }
 }
